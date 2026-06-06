@@ -102,21 +102,26 @@ st.write("Hyper-Retention Scripting Suite for Next-Gen Creators")
 # Sidebar
 st.sidebar.header("🕹️ Control Room")
 ai_provider = st.sidebar.selectbox("Select Model Engine:", ["Google Gemini", "Groq Cloud"])
-model_choice = "gemini-2.5-flash" if ai_provider == "Google Gemini" else "llama-3.2-11b-vision-preview"
 
-# System Prompt instructing structured output
+# System Prompt instructing structured output and dynamic language support
 SYSTEM_PROMPT = """
 You are a master YouTube Gaming Consultant and Retention Scriptwriter who has worked with top-tier gaming creators (like MrBeast Gaming, Dream, Mythpat). You know exactly how to write scripts that keep average view duration (AVD) above 70%.
+
+CRITICAL LANGUAGE RULE:
+You must strictly write the script text ("intro_hook", "script_text" inside "body_pacing", and "outro_retention") in the language requested by the user. 
+- If requested language is 'Hindi', use Hindi words written in Devanagari script or clean Hindi text.
+- If requested language is 'English', use pure English.
+- If requested language is 'Both Mix (Hinglish)', use conversational Indian YouTuber slang (Hindi words written in Latin script mixed with common English gaming terms, just like how CarryMinati, Mythpat, or Techno Gamerz talk).
 
 Output MUST be valid JSON matching this exact format:
 {
   "title_ideas": ["Title 1", "Title 2", "Title 3"],
   "thumbnail_concept": "Detailed graphic prompt for thumbnail design",
-  "intro_hook": "The first 30 seconds of high-energy script text with visual/sound cues",
+  "intro_hook": "The first 30 seconds of high-energy script text with visual/sound cues in the chosen language",
   "body_pacing": [
-    {"segment": "Part 1 Name", "script_text": "Commentary text...", "editing_cue": "[Sound effect/Zoom cue]"}
+    {"segment": "Part 1 Name", "script_text": "Commentary text in the chosen language...", "editing_cue": "[Sound effect/Zoom cue]"}
   ],
-  "outro_retention": "High-retention end screen call-to-action script text"
+  "outro_retention": "High-retention end screen call-to-action script text in the chosen language"
 }
 """
 
@@ -129,7 +134,11 @@ with col1:
     
     game_title = st.selectbox("2. Select the Game:", ["Minecraft", "GTA V", "BGMI / Valorant", "Horror Game (Granny/Phasmophobia)", "Custom / Indie Game"])
     video_style = st.selectbox("3. Video Commentary Vibe:", ["Hyper-Energetic Challenge", "Funny/Rage Quit", "Story Roleplay", "Deep Lore/Documentary"])
-    duration = st.number_input("4. Estimated Target Video Length (Minutes):", min_value=2, max_value=30, value=8)
+    
+    # ✨ NEW LANGUAGE OPTION ADDED HERE
+    script_language = st.selectbox("4. Choose Script Language:", ["Both Mix (Hinglish)", "Hindi", "English"])
+    
+    duration = st.number_input("5. Estimated Target Video Length (Minutes):", min_value=2, max_value=60, value=8)
 
 with col2:
     st.subheader("⚡ Live Telemetry Output")
@@ -138,7 +147,7 @@ with col2:
         if not gemini_key:
             st.error("🔑 API Key Missing in Secrets!")
         else:
-            user_query = f"Game: {game_title}\nStyle: {video_style}\nConcept Idea: {video_idea}\nTarget Length: {duration} mins\nGenerate the complete structured gaming script workflow."
+            user_query = f"Game: {game_title}\nStyle: {video_style}\nConcept Idea: {video_idea}\nTarget Length: {duration} mins\nRequested Script Language: {script_language}\n\nGenerate the complete structured gaming script workflow matching the language rules precisely."
             
             with st.spinner("Processing multi-agent pipeline logic..."):
                 try:
@@ -159,7 +168,7 @@ with col2:
                     st.info(f"🎨 **Thumbnail Concept:** {result_json.get('thumbnail_concept')}")
                     
                     # 2. Intro Hook
-                    st.markdown("### 🔥 30-Sec Ultra-Hook (Crucial for Retention)")
+                    st.markdown(f"### 🔥 30-Sec Ultra-Hook (Language: {script_language})")
                     st.warning(result_json.get("intro_hook"))
                     
                     # 3. Body Script
